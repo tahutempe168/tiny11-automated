@@ -15,6 +15,16 @@ from typing import Dict, List, Optional
 import requests
 import re
 
+# Ensure stdout/stderr use UTF-8 encoding in CI/Windows environments to avoid
+# UnicodeEncodeError when printing emojis or other non-cp1252 characters.
+# Python 3.7+ exposes TextIOBase.reconfigure(), which we use when available.
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')  # type: ignore[attr-defined]
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')  # type: ignore[attr-defined]
+except Exception:
+    # As a fallback, set PYTHONIOENCODING so child processes inherit UTF-8 where supported.
+    os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+
 # Discord embed field values are capped at 1024 chars and the whole
 # embed at 6000. Keep generous margins below those hard limits.
 MAX_FIELD_LENGTH = 1000
@@ -510,4 +520,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
